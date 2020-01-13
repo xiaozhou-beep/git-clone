@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<script src="/commons/js/jquery-3.3.1.min.js"></script>
+<body>
+商品名称选择：<span id="optios"></span>
+商品价格：<input type="text" id="prices">
+购买数量：<input type="text" id="counts" onblur="bb()">
+小计金额：<input type="text" id="subprices">
+<input type="button" value="提交" onclick="insert()">
+</body>
+<script>
+    function insert(){
+        var id=$("#numbers option:selected").val();
+        var counts=$("#counts").val();
+        var subprices=$("#subprices").val();
+
+        $.ajax({
+            url:"http://localhost:8080/Car/addOrder",
+            dataType:"json",
+            data:{"productId":id,
+                "count":counts,
+            "subtotal":subprices
+            },
+            success:function (product) {
+                alert("已经成功");
+                location.href="index.html";
+
+
+            },error:function () {
+
+            }
+        })
+    }
+
+
+    function bb() {
+        var id=$("#numbers option:selected").val();
+        var a=$("#counts").val();
+        $.ajax({
+            url:"http://localhost:8080/Car/queryProductCountprice",
+            dataType:"json",
+            data:{"count":a,
+            "id":id},
+            success:function (product) {
+                alert(product);
+                alert(product.countPrice);
+            $("#subprices").val(product.countPrice);
+
+            },error:function () {
+
+            }
+        })
+    }
+
+    $(function () {
+        f();
+
+    })
+    function f() {
+        $.ajax({
+            url:"http://localhost:8080/Car/queryProductList",
+            dataType:"json",
+            success:function (result) {
+                str="<select id='numbers' ondblclick='a()'><option value=''>请选择</option>";
+                for (var i=0;i<result.length;i++) {
+
+                    str+='<option  value='+result[i].proid+'>'+result[i].pName+'</option>';
+
+                }
+                str+="</select>";
+                $("#optios").html(str);
+
+            },error:function () {
+
+            }
+        })
+    }
+
+
+    function a() {
+        var id=$("#numbers option:selected").val();
+        alert(id);
+        if(id==''){
+            alert("重新选中");
+        }else{
+            $.ajax({
+                url:"http://localhost:8080/Car/queryProductListId",
+                dataType:"json",
+                data:{"id":id},
+                success:function (result) {
+                    $("#prices").val(result.price)
+                },error:function () {
+
+                }
+            })
+        }
+
+    }
+
+
+
+
+</script>
+</html>
