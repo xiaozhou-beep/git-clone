@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Title</title>
+
+    <script src="/commons/js/jquery-3.3.1.min.js"></script>
+
+
+    <!-- 新 Bootstrap 核心 CSS 文件 -->
+    <link rel="stylesheet" href="/commons/css/bootstrap.min.css" type="text/css">
+
+    <link href="/commons/bootstrap/css/bootstrap.css" rel="stylesheet" />
+    <!-- 新 datatable 核心 CSS 文件 -->
+    <link rel="stylesheet" href="/commons/datatable/css/jquery.dataTables.css" type="text/css">
+
+    <link rel="stylesheet" href="/commons/bootstrap/css/bootstrap-theme.min.css" type="text/css">
+
+    <link rel="stylesheet" href="/commons/datetimepicker/css/bootstrap-datetimepicker.css" type="text/css">
+    <script src="/commons/datetimepicker/js/bootstrap-datetimepicker.js"></script>
+    <!--<link href="/commons/kartik-v-bootstrap-fileinput-d3cf23c/css/fileinput.css" rel="stylesheet" type="text/css" media="all"/>-->
+    <link href="/commons/kartik-v-bootstrap-fileinput-d3cf23c/themes/explorer/theme.css" rel="stylesheet" type="text/css" media="all"/>
+    <link href="/commons/kartik-v-bootstrap-fileinput-d3cf23c/css/fileinput-rtl.css"/>
+
+    <script src="/commons/kartik-v-bootstrap-fileinput-d3cf23c/js/fileinput.min.js"></script>
+    <script src="/commons/kartik-v-bootstrap-fileinput-d3cf23c/themes/explorer/theme.js"></script>
+    <script src="/commons/kartik-v-bootstrap-fileinput-d3cf23c/js/locales/zh.js"></script>
+
+
+    <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+    <script src="/commons/bootstrap/jss/bootstrap.min.js"></script>
+
+    <script src="/commons/datatable/js/jquery.dataTables.js"></script>
+
+    <script src="/commons/bootbox/bootbox.all.min.js"></script>
+
+    <script>
+        function hont() {
+            location.href="addOrder.html";
+        }
+    </script>
+</head>
+
+<body>
+<div class="row">
+    <div class="col-md-12">
+        <input type="button" onclick="hont()" value="新增"><br>
+        <div class="panel panel-default">
+            <div class="panel-heading">示例列表</div>
+            <div class="table-responsive">
+                <table class="table table-bordered responsive" id="table" cellspacing="0" width="100%">
+                    <thead>
+                    <tr>
+                        <th width="8%" class="min-mobile-l">订单编号</th>
+                        <th width="10%" class="min-mobile-l">商品名称</th>
+                        <th width="10%" class="min-mobile-l">商品街个</th>
+                        <th width="10%" class="min-mobile-l">购买数量</th>
+                        <th width="10%" class="min-mobile-l">小计金额</th>
+                        <th width="10%" class="min-mobile-l">操作</th>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+<span>超级无敌棒棒糖</span>
+
+</body>
+
+<script>
+    $(function(){
+        refreshTable();
+    })
+    //点击删除按钮时执行的方法
+    function clickEvent(){
+        //给删除按钮绑定点击事件
+        $('#table').on('click','.js-delete',function(){
+            var id = $(this).attr("data-id")
+            //bootBox 确认框
+            bootbox.confirm({
+                message: "确定要删除吗？",
+                buttons: {
+                    confirm: {
+                        label: '确定',
+                        className: 'btn-success'
+                    },
+                    cancel: {
+                        label: '再想想',
+                        className: 'btn-danger'
+                    }
+                },
+                callback: function (result) {
+                    if(result){
+                        //请求删除方法
+                        $.get('http://localhost:8080/Car/uupdateOrder?id='+id+'', function(result){
+                            if(result.status == 0){
+                                bootbox.alert({
+                                    message: "删除成功！ ",
+                                    size: 'small'
+                                });
+                            }else{
+                                bootbox.alert({
+                                    message: "删除失败! ",
+                                    size: 'small'
+                                });
+                            }
+                            refreshTable();//刷新列表数据内容
+                        })
+                    }
+                }
+            });
+        })
+
+    }
+
+    //加载表格
+    function refreshTable(){
+        var $dt = $('#table').dataTable({
+            "columns" : [
+                {
+                    "data" : "orderId",
+                    "class" : "text-center"
+                },
+                {
+                    "data" : "pName",
+                    "class" : "text-center"
+                },
+
+                {
+                    "data" : "price",
+                    "class" : "text-center",
+                },
+                {
+                    "data" : "count",
+                    "class" : "text-center",
+                },
+                {
+                    "data" : "subtotal",
+                    "class" : "text-center",
+                },
+
+                {
+                    "data" : "orderId",
+                    "class" : "text-center",
+                    "render" : function(data, type, row) {
+                        return '<span class="btn btn-primary btn-xs ml-5 js-edit" data-id="'+data+'">编辑</span> <span class="btn btn-danger btn-xs ml-5 js-delete" data-id="'+data+'">删除</span>';
+                    }
+                },
+            ],
+            ajax : {//类似jquery的ajax参数，基本都可以用。
+                type : "post",//后台指定了方式，默认get，外加datatable默认构造的参数很长，有可能超过get的最大长度。
+                url : "http://localhost:8080/Car/queryList",
+                dataSrc : "data",//默认data，也可以写其他的，格式化table的时候取里面的数据
+                cache: false, //在每次请求之后ajax不被请求
+                data : function(d) {//d 是原始的发送给服务器的数据，默认很长。
+                    var param = {};//因为服务端排序，可以新建一个参数对象
+                    param.start = d.start;//开始的序号
+                    param.length = d.length;//要取的数据的
+                    return param;//自定义需要传递的参数。
+                },
+            },
+            //"ajax": $.fn.dataTable.pagerAjax({url: "/listData"}),
+            bJQueryUI : true, //使用DataTables提供的Themes，界面比较美观
+            lengthMenu: [ //自定义分页长度
+                [ 5, 10, 20 ],
+                [ '5 条', '10 条', '20条' ]
+            ],
+            bPaginate:true,
+            sPaginationType : "full_numbers",          // 分页
+
+            /*
+             * 默认为true
+             * 是否允许终端用户从一个选择列表中选择分页的页数，页数为10，25，50和100，需要分页组件bPaginate的支持
+             * 开关，是否显示一个每页长度的选择条（需要分页器支持）
+             */
+
+            bLengthChange:true,
+            /*
+               * 默认为true
+               * 是否开启分页功能,即使设置为false,仍然会有一个默认的<前进,后退>分页组件
+               */
+
+            bPaginate:true,
+            processing : true,//载入数据的时候是否显示“载入中”
+            bDestroy : true, //用于当要在同一个元素上执行新的dataTable绑定时，将之前的那个数据对象清除掉，换以新的对象设置
+            ordering : false,//排序操作在服务端进行，所以可以关了。
+
+
+            language : {
+                processing : "载入中",//处理页面数据的时候的显示
+                paginate : {//分页的样式文本内容。
+                    previous : "上一页",
+                    next : "下一页",
+                    first : "第一页",
+                    last : "最后一页"
+                },
+                zeroRecords : "没有内容",//table tbody内容为空时，tbody的内容。
+                //下面三者构成了总体的左下角的内容。
+                info : "第 _PAGE_/_PAGES_页 共 _TOTAL_条记录",//左下角的信息显示，大写的词为关键字。
+                infoEmpty : "第 _PAGE_/_PAGES_页 共 _TOTAL_条记录",//筛选为空时左下角的显示。
+                infoFiltered : ""//筛选之后的左下角筛选提示(另一个是分页信息显示，在上面的info中已经设置，所以可以不显示)，
+            },
+            "columnDefs": [{
+                "defaultContent": "",
+                "sInfo": "显示第 _START_ 至 _END_ 项结果，共 _TOTAL_ 条简历",
+                "targets": "_all"
+            }]
+        }).on('click', 'a[row-index]', function () {
+        });
+    }
+
+
+    //对Date的扩展，将 Date 转化为指定格式的String
+    //月(M)、日(d)、小时(h)、分(m)、秒(s)、季度(q) 可以用 1-2 个占位符，
+    //年(y)可以用 1-4 个占位符，毫秒(S)只能用 1 个占位符(是 1-3 位的数字)
+    //例子：
+    //(new Date()).Format("yyyy-MM-dd hh:mm:ss.S") ==> 2006-07-02 08:09:04.423
+    //(new Date()).Format("yyyy-M-d h:m:s.S")      ==> 2006-7-2 8:9:4.18
+    Date.prototype.Format = function (fmt) { //author: meizz
+        var o = {
+            "M+": this.getMonth() + 1, //月份
+            "d+": this.getDate(), //日
+            "h+": this.getHours(), //小时
+            "m+": this.getMinutes(), //分
+            "s+": this.getSeconds(), //秒
+            "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+            "S": this.getMilliseconds() //毫秒
+        };
+        if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+        for (var k in o)
+            if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+        return fmt;
+    }
+
+</script>
+</html>
